@@ -40,7 +40,7 @@ def __virtual__():
     Confine this module to Mac OS with Homebrew.
     """
 
-    if salt.utils.path.which("brew") and __grains__["os"] == "MacOS":
+    if _homebrew_bin() and __grains__["os"] == "MacOS":
         return __virtualname__
     return (
         False,
@@ -114,9 +114,7 @@ def _homebrew_bin():
     """
     Returns the full path to the homebrew binary in the PATH
     """
-    ret = __salt__["cmd.run"]("brew --prefix", output_loglevel="trace")
-    ret += "/bin/brew"
-    return ret
+    return salt.utils.path.which("brew")
 
 
 def _call_brew(cmd, failhard=True):
@@ -125,7 +123,7 @@ def _call_brew(cmd, failhard=True):
     """
     user = __salt__["file.get_user"](_homebrew_bin())
     runas = user if user != __opts__["user"] else None
-    cmd = "{} {}".format(salt.utils.path.which("brew"), cmd)
+    cmd = "{} {}".format(_homebrew_bin(), cmd)
     result = __salt__["cmd.run_all"](
         cmd, runas=runas, output_loglevel="trace", python_shell=False
     )
